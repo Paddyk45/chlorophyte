@@ -1,0 +1,12 @@
+[package]
+name = "te-mass-finder"
+version = "0.1.0"
+edition = "2021"
+authors = ["Paddyk45"]
+description = "Finds terraria servers"
+
+[dependencies]
+ipnet = "2.9.0"
+log = "0.4.21"
+simple_logger = "4.3.3"
+matscan-tcp = { path = "../matscan-tcp" }
