@@ -1,5 +1,9 @@
 # Chlorophyte
 
+<p align="left">
+    <img src="https://github.com/Paddyk45/chlorophyte/blob/main/logo.png" height=100>
+</p>
+
 ## What is Chlorophyte?
 Chlorophyte is program that scans a good portion of the internet for Terraria v1.4.4.9 servers.
 
