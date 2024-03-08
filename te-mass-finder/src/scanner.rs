@@ -10,6 +10,7 @@ use std::net::SocketAddrV4;
 use std::sync::RwLock;
 use std::thread::sleep;
 use std::time::Duration;
+use log::info;
 use te_terraria_protocol::packet::{
     C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
     WriteTerrariaPacket,
@@ -87,12 +88,12 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
             if FOUND_SERVERS.read().unwrap().iter().any(|s| s.address == addr) {
                 continue;
             }
-            dbg!(packet_id);
             match packet_id {
                 2 => {
                     if let Ok(packet) =
                         Cursor::new(&tcp.payload).read_terraria_packet::<S2CFatalError>()
                     {
+                        info!("Found server, but I got booted: {addr}");
                         FOUND_SERVERS.write().unwrap().push(TerrariaServer {
                             address: addr,
                             connection_request_result: ConnectionRequestResult::Booted(
@@ -105,14 +106,14 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
                     .read_terraria_packet::<S2CConnectionApproved>()
                     .is_ok() =>
                 {
-                    dbg!();
+                    info!("Found server: {addr}");
                     FOUND_SERVERS.write().unwrap().push(TerrariaServer {
                         address: addr,
                         connection_request_result: ConnectionRequestResult::Approved,
                     });
                 }
                 9 => {
-                    dbg!();
+                    info!("Found server: {addr}");
                     FOUND_SERVERS.write().unwrap().push(TerrariaServer {
                         address: addr,
                         connection_request_result: ConnectionRequestResult::Approved,
@@ -122,6 +123,7 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
                     .read_terraria_packet::<S2CPasswordRequired>()
                     .is_ok() =>
                 {
+                    info!("Found password-protected server: {addr}");
                     FOUND_SERVERS.write().unwrap().push(TerrariaServer {
                         address: addr,
                         connection_request_result: ConnectionRequestResult::PasswordRequired,
