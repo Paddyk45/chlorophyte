@@ -28,7 +28,6 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
         while addr <= addr_end {
             for port in range.port_start..=range.port_end {
                 let addr = SocketAddrV4::new(addr, port);
-                println!("{addr}");
                 tcp_w.send_syn(addr, fastrand::u32(..u32::MAX - 100_000));
                 CONNECTIONS
                     .write()
