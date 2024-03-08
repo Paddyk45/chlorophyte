@@ -1,0 +1,9 @@
+[package]
+name = "matscan-ranges"
+version = "0.1.0"
+edition = "2021"
+authors = ["mat"]
+repository = "https://github.com/mat-1/matscan"
+
+[dependencies]
+anyhow = "1.0.80"

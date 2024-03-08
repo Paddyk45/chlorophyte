@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
-members = ["te-mass-finder"]
+members = [ "matscan-ranges","te-mass-finder", "te-terraria-protocol"]
 exclude = ["matscan-tcp"]

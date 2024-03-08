@@ -4,8 +4,15 @@
 TerraEye is program that scans a good portion of the internet for Terraria v1.4.4.9 servers.
 
 ## Current state
-TerraEye development has not started *yet*, but it will start soon™️
+The mass finder is in a working state.
+Development of the rescanner and the part that gets the server information is planned but has not been started.
 
-## License
+## Licenses
 All crates starting with te- are licensed under the GLWTPL. For more info, see LICENSE.
-The matscan-tcp crate is [part of matscan](https://github.com/mat-1/matscan/tree/master/src/net) and is licensed under the matscan license. For more info, see [here](https://raw.githubusercontent.com/mat-1/matscan/master/LICENSE)
+All crates starting with matscan- are part of [matscan](https://github.com/mat-1/matscan) and are licensed under the [matscan license](https://raw.githubusercontent.com/mat-1/matscan/master/LICENSE)
+
+## Thanks
+- [mat](https://github.com/mat-1) for letting me "borrow" small amounts of code from [matscan](https://github.com/mat-1/matscan) and helping me a bit
+- [The Wireshark software](https://www.wireshark.org) for helping me debug my stupid errors
+- [Some 10-year-old protocol documentation](https://seancode.com/terrafirma/net.html) for some protocol packet stuff
+- [Veronoicc](https://github.com/veronoicc/) for helping me
