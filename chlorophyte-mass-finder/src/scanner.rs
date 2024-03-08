@@ -11,7 +11,7 @@ use std::sync::RwLock;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 use log::{info, trace};
-use te_terraria_protocol::packet::{
+use chlorophyte_terraria_protocol::packet::{
     C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
     WriteTerrariaPacket,
 };

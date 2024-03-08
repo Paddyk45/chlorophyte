@@ -12,7 +12,7 @@ use matscan_tcp::{SourcePort, StatelessTcp};
 use std::net::Ipv4Addr;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
-use te_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
+use chlorophyte_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 
 fn main() {
     if var("RUST_LOG").is_err() {
@@ -20,7 +20,7 @@ fn main() {
     } else {
         simple_logger::init_with_env().unwrap();
     }
-    eprintln!("TerraEye - MassFinder v0.0.1 - https://github.com/Paddyk45/terra-eye");
+    eprintln!("Chlorophyte - MassFinder v0.0.1 - https://github.com/Paddyk45/chlorophyte");
     let mut conn_request_packet = vec![0u8; 0];
     conn_request_packet
         .write_terraria_packet(C2SConnect { version: 279 })
