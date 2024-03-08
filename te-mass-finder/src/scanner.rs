@@ -1,7 +1,7 @@
 use crate::model::{ConnectionRequestResult, ConnectionState, TerrariaServer};
 use ipnet::IpAdd;
 use matscan_ranges::targets::ScanRanges;
-use matscan_tcp::{StatelessTcpReadHalf, StatelessTcpWriteHalf};
+use matscan_tcp::{StatelessTcpReadHalf, StatelessTcpWriteHalf, Throttler};
 use once_cell::sync::Lazy;
 use pnet_packet::tcp::TcpFlags;
 use std::collections::HashMap;
@@ -9,7 +9,7 @@ use std::io::Cursor;
 use std::net::SocketAddrV4;
 use std::sync::RwLock;
 use std::thread::sleep;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use log::info;
 use te_terraria_protocol::packet::{
     C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
@@ -23,6 +23,11 @@ static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::n
 /// The thread that spews SYN packets
 #[allow(clippy::needless_pass_by_value)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
+    let mut throtter = Throttler::new(10000);
+
+    let mut t = Instant::now();
+    let mut p = 0usize;
+    let mut batch_size = throtter.next_batch();
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
         let addr_end = range.addr_end;
@@ -30,11 +35,20 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
             for port in range.port_start..=range.port_end {
                 let addr = SocketAddrV4::new(addr, port);
                 tcp_w.send_syn(addr, fastrand::u32(..u32::MAX - 100_000));
+                p += 1;
+                if t.elapsed().as_nanos() >= Duration::from_secs(1).as_nanos() {
+                    info!("Scanning @ ~{p} packets/s");
+                    t = Instant::now();
+                    p = 0;
+                }
+                batch_size -= 1;
+                if batch_size == 0 {
+                    batch_size = throtter.next_batch();
+                }
                 CONNECTIONS
                     .write()
                     .unwrap()
                     .insert(addr, ConnectionState::default());
-                sleep(Duration::from_millis(1) / 2);
             }
             addr = addr.saturating_add(1);
         }

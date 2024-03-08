@@ -17,7 +17,8 @@ use pnet::{
 };
 use tracing::warn;
 
-use crate::{TemplatePacketRepr, SourcePort};
+use crate::SourcePort;
+use crate::tcp_template::TemplatePacketRepr;
 
 use super::{
     raw_sockets::RawSocket,
