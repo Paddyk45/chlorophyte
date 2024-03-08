@@ -10,7 +10,7 @@ use std::net::SocketAddrV4;
 use std::sync::RwLock;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use log::info;
+use log::{info, trace};
 use te_terraria_protocol::packet::{
     C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
     WriteTerrariaPacket,
@@ -23,11 +23,14 @@ static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::n
 /// The thread that spews SYN packets
 #[allow(clippy::needless_pass_by_value)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
+    let addrs = ranges.count() as f64;
     let mut throtter = Throttler::new(10000);
 
     let mut t = Instant::now();
     let mut p = 0usize;
+    
     let mut batch_size = throtter.next_batch();
+    let mut syns = 0f64;
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
         let addr_end = range.addr_end;
@@ -36,8 +39,10 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
                 let addr = SocketAddrV4::new(addr, port);
                 tcp_w.send_syn(addr, fastrand::u32(..u32::MAX - 100_000));
                 p += 1;
+                syns += 1.;
                 if t.elapsed().as_nanos() >= Duration::from_secs(1).as_nanos() {
                     info!("Scanning @ ~{p} packets/s");
+                    info!("{:.3}% done ({}/{} hosts done)", (syns/addrs)*100., syns, addrs);
                     t = Instant::now();
                     p = 0;
                 }
@@ -172,10 +177,13 @@ pub fn garbage_collector() -> ! {
             .enumerate()
             .filter(|c| c.1 .1.syn_time.elapsed() > Duration::from_secs(7) || c.1 .1.closed)
             .for_each(|c| to_remove.push(c.1 .0));
-
+        if !to_remove.is_empty() {
+            trace!("[gc] removing {} connections", to_remove.len());
+        }
         for i in to_remove {
             CONNECTIONS.write().unwrap().remove(i);
         }
+        sleep(Duration::from_millis(10));
     }
 }
 

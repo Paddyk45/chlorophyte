@@ -3,6 +3,7 @@
 mod model;
 mod scanner;
 
+use std::env::var;
 use crate::scanner::{garbage_collector, get_found_servers};
 use log::{info, Level};
 use matscan_ranges::exclude;
@@ -14,7 +15,11 @@ use std::time::Duration;
 use te_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 
 fn main() {
-    simple_logger::init_with_level(Level::Trace).unwrap();
+    if var("RUST_LOG").is_err() {
+        simple_logger::init_with_level(Level::Info).unwrap();
+    } else {
+        simple_logger::init_with_env().unwrap();
+    }
     eprintln!("TerraEye - MassFinder v0.0.1 - https://github.com/Paddyk45/terra-eye");
     let mut conn_request_packet = vec![0u8; 0];
     conn_request_packet
