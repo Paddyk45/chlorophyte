@@ -57,6 +57,14 @@ impl ScanRange {
             port_end,
         }
     }
+    pub fn multi_address_port(addr_start: Ipv4Addr, addr_end: Ipv4Addr, port_start: u16, port_end: u16) -> Self {
+        Self {
+            addr_start,
+            addr_end,
+            port_start,
+            port_end,
+        }
+    }
 }
 
 #[derive(Default, Clone, Debug, PartialEq)]

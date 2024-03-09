@@ -9,12 +9,13 @@ description = "Finds terraria servers"
 ipnet = "2.9.0"
 log = "0.4.21"
 simple_logger = "4.3.3"
-matscan-tcp = { path = "../matscan-tcp" }
-matscan-ranges = { path = "../matscan-ranges" }
+matscan-tcp = { path = "../shared/matscan-tcp" }
+matscan-ranges = { path = "../shared/matscan-ranges" }
 once_cell = "1.19.0"
 fastrand = "2.0.1"
 pnet_packet = "0.34.0"
-chlorophyte-terraria-protocol = { version = "0.1.0", path = "../chlorophyte-terraria-protocol" }
+chlorophyte-terraria-protocol = { version = "0.1.0", path = "../shared/chlorophyte-terraria-protocol" }
+ctrlc = "3.4.2"
 
 [profile.release]
 debug = true

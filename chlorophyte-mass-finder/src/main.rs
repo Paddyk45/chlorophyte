@@ -10,11 +10,16 @@ use matscan_ranges::exclude;
 use matscan_ranges::targets::{ScanRange, ScanRanges};
 use matscan_tcp::{SourcePort, StatelessTcp};
 use std::net::Ipv4Addr;
+use std::process::exit;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
 use chlorophyte_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 
 fn main() {
+    ctrlc::set_handler(|| {
+        dbg!(get_found_servers());
+        exit(130);
+    }).unwrap();
     if var("RUST_LOG").is_err() {
         simple_logger::init_with_level(Level::Info).unwrap();
     } else {
@@ -27,10 +32,11 @@ fn main() {
         .unwrap();
     // TODO: Add more range modes
     let mut ranges = ScanRanges::new();
-    ranges.extend(vec![ScanRange::single_port(
-        Ipv4Addr::new(50, 0, 0, 0),
-        Ipv4Addr::new(52, 255, 255, 255),
-        7777
+    ranges.extend(vec![ScanRange::multi_address_port(
+        Ipv4Addr::new(45, 133, 9, 0),
+        Ipv4Addr::new(45, 133, 9, 255),
+        1000,
+        20000
     )]);
     let before_exclude = ranges.count();
     ranges.exclude_ranges(exclude::parse(include_str!("exclude.conf")).unwrap());

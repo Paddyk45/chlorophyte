@@ -20,12 +20,15 @@ static CONNECTIONS: Lazy<RwLock<HashMap<SocketAddrV4, ConnectionState>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::new(vec![]));
 
+const MAX_PPS: u64 = 30_000;
+
 /// The thread that spews SYN packets
 #[allow(clippy::needless_pass_by_value)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
     let addrs = ranges.count() as f64;
-    let mut throtter = Throttler::new(10000);
-
+    let mut throtter = Throttler::new(MAX_PPS);
+    info!("Throttler is set to {MAX_PPS} packets/s");
+    
     let mut t = Instant::now();
     let mut p = 0usize;
     
