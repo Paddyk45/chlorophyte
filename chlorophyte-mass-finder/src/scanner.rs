@@ -1,5 +1,10 @@
 use crate::model::{ConnectionRequestResult, ConnectionState, TerrariaServer};
+use chlorophyte_terraria_protocol::packet::{
+    C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
+    WriteTerrariaPacket,
+};
 use ipnet::IpAdd;
+use log::{info, trace};
 use matscan_ranges::targets::ScanRanges;
 use matscan_tcp::{StatelessTcpReadHalf, StatelessTcpWriteHalf, Throttler};
 use once_cell::sync::Lazy;
@@ -10,11 +15,6 @@ use std::net::SocketAddrV4;
 use std::sync::RwLock;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-use log::{info, trace};
-use chlorophyte_terraria_protocol::packet::{
-    C2SConnect, ReadTerrariaPacket, S2CConnectionApproved, S2CFatalError, S2CPasswordRequired,
-    WriteTerrariaPacket,
-};
 
 static CONNECTIONS: Lazy<RwLock<HashMap<SocketAddrV4, ConnectionState>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
@@ -23,17 +23,17 @@ static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::n
 const MAX_PPS: u64 = 30_000;
 
 /// The thread that spews SYN packets
-#[allow(clippy::needless_pass_by_value)]
+#[allow(clippy::needless_pass_by_value, clippy::cast_precision_loss)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
-    let addrs = ranges.count() as f64;
+    let addrs = ranges.count() as f32;
     let mut throtter = Throttler::new(MAX_PPS);
     info!("Throttler is set to {MAX_PPS} packets/s");
-    
+
     let mut t = Instant::now();
     let mut p = 0usize;
-    
+
     let mut batch_size = throtter.next_batch();
-    let mut syns = 0f64;
+    let mut syns = 0f32;
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
         let addr_end = range.addr_end;
@@ -45,7 +45,12 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
                 syns += 1.;
                 if t.elapsed().as_nanos() >= Duration::from_secs(1).as_nanos() {
                     info!("Scanning @ ~{p} packets/s");
-                    info!("{:.3}% done ({}/{} hosts done)", (syns/addrs)*100., syns, addrs);
+                    info!(
+                        "{:.3}% done ({}/{} hosts done)",
+                        (syns / addrs) * 100.,
+                        syns,
+                        addrs
+                    );
                     t = Instant::now();
                     p = 0;
                 }
@@ -107,7 +112,12 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
                 tcp_w.send_rst(addr, tcp.destination, tcp.acknowledgement, tcp.sequence);
                 continue;
             };
-            if FOUND_SERVERS.read().unwrap().iter().any(|s| s.address == addr) {
+            if FOUND_SERVERS
+                .read()
+                .unwrap()
+                .iter()
+                .any(|s| s.address == addr)
+            {
                 continue;
             }
             match packet_id {

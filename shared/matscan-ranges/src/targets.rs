@@ -1,5 +1,6 @@
 use crate::{Ipv4Range, Ipv4Ranges};
 use std::net::{Ipv4Addr, SocketAddrV4};
+use std::str::FromStr;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScanRange {
@@ -57,13 +58,109 @@ impl ScanRange {
             port_end,
         }
     }
-    pub fn multi_address_port(addr_start: Ipv4Addr, addr_end: Ipv4Addr, port_start: u16, port_end: u16) -> Self {
+    pub fn multi_address_port(
+        addr_start: Ipv4Addr,
+        addr_end: Ipv4Addr,
+        port_start: u16,
+        port_end: u16,
+    ) -> Self {
         Self {
             addr_start,
             addr_end,
             port_start,
             port_end,
         }
+    }
+}
+
+impl FromStr for ScanRange {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let Some((addr, port)) = s.split_once(':') else {
+            return Err("No port specified");
+        };
+
+        // parse the ip address range
+        let is_slash = addr.contains('/');
+        let is_hyphen = addr.contains('-');
+
+        if is_slash && is_hyphen {
+            return Err("Invalid range - contains both - and /");
+        }
+
+        let range = if is_slash {
+            let mut parts = addr.split('/');
+
+            let ip = parts.next().unwrap();
+            let mask = parts.next().unwrap();
+
+            let mask = 32
+                - mask
+                    .parse::<u8>()
+                    .map_err(|_| "Failed to parse subnet mask as u8")?;
+
+            let mask_bits = 2u32.pow(mask as u32) - 1;
+
+            let ip_net_addr =
+                Ipv4Addr::from_str(ip).map_err(|_| "Failed to parse IP net address as Ipv4Addr")?;
+            let ip_u32 = u32::from(ip_net_addr);
+
+            let addr_start = Ipv4Addr::from(ip_u32 & !mask_bits);
+            let addr_end = Ipv4Addr::from(ip_u32 | mask_bits);
+
+            Ipv4Range {
+                start: addr_start,
+                end: addr_end,
+            }
+        } else if is_hyphen {
+            let mut parts = addr.split('-');
+
+            let ip_start = parts.next().unwrap();
+            let ip_end = parts.next().unwrap();
+
+            let ip_start = Ipv4Addr::from_str(ip_start)
+                .map_err(|_| "Could not parse address start as Ipv4Addr")?;
+            let ip_end = Ipv4Addr::from_str(ip_end)
+                .map_err(|_| "Could not parse address end as Ipv4Addr")?;
+            if ip_start > ip_end {
+                return Err("Start address is bigger than the end address");
+            }
+
+            Ipv4Range {
+                start: ip_start,
+                end: ip_end,
+            }
+        } else {
+            let addr =
+                Ipv4Addr::from_str(addr).map_err(|_| "Could not parse single address as Ipv4Addr")?;
+            Ipv4Range::single(addr)
+        };
+
+        // parse the port range
+        let is_hyphen = port.contains("-");
+        let (port_start, port_end) = if is_hyphen {
+            let (s, e) = port.split_once("-").unwrap();
+            let s = s
+                .parse::<u16>()
+                .map_err(|_| "Could not parse port start as u16")?;
+            let e = e
+                .parse::<u16>()
+                .map_err(|_| "Could not parse port end as u16")?;
+            (s, e)
+        } else {
+            let port = port
+                .parse::<u16>()
+                .map_err(|_| "Failed to parse port as u16")?;
+            (port, port)
+        };
+
+        Ok(Self {
+            addr_start: range.start,
+            addr_end: range.end,
+            port_start,
+            port_end,
+        })
     }
 }
 

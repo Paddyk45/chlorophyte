@@ -1,8 +1,8 @@
 use crate::types::{TerrariaTypesR, TerrariaTypesW};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use std::fmt::Debug;
 use std::io::{Cursor, ErrorKind, Read, Write};
 use std::{io, vec};
-use std::fmt::Debug;
 
 pub type Rgb = (u8, u8, u8);
 
@@ -37,7 +37,7 @@ impl<T: Read + Debug> ReadTerrariaPacket for T {
         if n < len as usize - 2 {
             return Err(io::Error::new(ErrorKind::WouldBlock, "Packet is too short"));
         }
-        
+
         P::deserialize(buf[1..].to_vec()).map(|p| *p)
     }
 }

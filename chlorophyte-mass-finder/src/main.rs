@@ -3,45 +3,55 @@
 mod model;
 mod scanner;
 
-use std::env::var;
 use crate::scanner::{garbage_collector, get_found_servers};
+use chlorophyte_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 use log::{info, Level};
 use matscan_ranges::exclude;
 use matscan_ranges::targets::{ScanRange, ScanRanges};
 use matscan_tcp::{SourcePort, StatelessTcp};
-use std::net::Ipv4Addr;
+use std::env::{args, var};
+use std::io::{stdout, Write};
 use std::process::exit;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
-use chlorophyte_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 
 fn main() {
     ctrlc::set_handler(|| {
         dbg!(get_found_servers());
         exit(130);
-    }).unwrap();
+    })
+    .unwrap();
     if var("RUST_LOG").is_err() {
         simple_logger::init_with_level(Level::Info).unwrap();
     } else {
         simple_logger::init_with_env().unwrap();
     }
-    eprintln!("Chlorophyte - MassFinder v0.0.1 - https://github.com/Paddyk45/chlorophyte");
-    let mut conn_request_packet = vec![0u8; 0];
-    conn_request_packet
-        .write_terraria_packet(C2SConnect { version: 279 })
-        .unwrap();
-    // TODO: Add more range modes
+    let basic = figlet_rs::FIGfont::from_content(include_str!("../../assets/basic.flf")).unwrap();
+    let mut banner = basic.convert("CHLOROPHYTE").unwrap();
+    banner.height = 6;
+    let splashes = include_str!("../../assets/splashes.txt").lines().collect::<Vec<&str>>();
+    let splash = splashes[fastrand::usize(..splashes.len())];
+    println!("{banner}{splash}\n");
+    eprintln!("Chlorophyte MassFinder - https://github.com/Paddyk45/chlorophyte");
     let mut ranges = ScanRanges::new();
-    ranges.extend(vec![ScanRange::single_port(
-        Ipv4Addr::new(0, 0, 0, 0),
-        Ipv4Addr::new(255, 255, 255, 255),
-        7777
-    )]);
+
+    let Some(includes) = args().nth(1) else {
+        panic!("No range specified");
+    };
+    let includes = includes
+        .split(',')
+        .map(|i| i.parse::<ScanRange>().expect("Failed to parse scan range"))
+        .collect::<Vec<ScanRange>>();
+    ranges.extend(includes);
+
     let before_exclude = ranges.count();
     ranges.exclude_ranges(exclude::parse(include_str!("exclude.conf")).unwrap());
     info!("Excluded {} IP-addresses", before_exclude - ranges.count());
 
-    let tcp = StatelessTcp::new(SourcePort::Range { min: 61000, max:65000 });
+    let tcp = StatelessTcp::new(SourcePort::Range {
+        min: 61000,
+        max: 65000,
+    });
     info!(
         "Scanning {} ranges @ {} IP-addresses",
         ranges.ranges().len(),
