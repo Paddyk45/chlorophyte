@@ -32,11 +32,10 @@ fn main() {
         .unwrap();
     // TODO: Add more range modes
     let mut ranges = ScanRanges::new();
-    ranges.extend(vec![ScanRange::multi_address_port(
-        Ipv4Addr::new(45, 133, 9, 0),
-        Ipv4Addr::new(45, 133, 9, 255),
-        1000,
-        20000
+    ranges.extend(vec![ScanRange::single_port(
+        Ipv4Addr::new(0, 0, 0, 0),
+        Ipv4Addr::new(255, 255, 255, 255),
+        7777
     )]);
     let before_exclude = ranges.count();
     ranges.exclude_ranges(exclude::parse(include_str!("exclude.conf")).unwrap());
