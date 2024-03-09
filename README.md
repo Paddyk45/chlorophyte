@@ -18,7 +18,7 @@ Before running the scanner, you need to enter this command:
 ##### This will make the OS ignore all TCP packets received on ports 61000-65000. This is required because chlorophyte uses a TCP stack separate from the OSes one. If the OS receives a TCP packet without having a connection with that IP, it will send an RST packet. This command makes the OS ignore all connections on this port so that doesn't happen.
 After you entered the command, you build the mass finder with the following command:
 `cargo build --bin chlorophyte-mass-finder --release`
-##### That will put the executable in target/release/te-mass-finder. You have to run it as root, as the custom TCP stack requires raw socket access. Alternatively, you can run `sudo setcap cap_net_admin target/release/te-mass-finder` to make it work without root.
+##### That will put the executable in target/release/chlorophyte-mass-finder. You have to run it as root, as the custom TCP stack requires raw socket access. Alternatively, you can run `sudo setcap cap_net_admin target/release/te-mass-finder` to make it work without root.
 
 At the end of the scan, all found servers will be printed.
 
