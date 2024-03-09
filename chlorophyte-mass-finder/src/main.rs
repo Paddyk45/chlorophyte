@@ -4,13 +4,11 @@ mod model;
 mod scanner;
 
 use crate::scanner::{garbage_collector, get_found_servers};
-use chlorophyte_terraria_protocol::packet::{C2SConnect, WriteTerrariaPacket};
 use log::{info, Level};
 use matscan_ranges::exclude;
 use matscan_ranges::targets::{ScanRange, ScanRanges};
 use matscan_tcp::{SourcePort, StatelessTcp};
 use std::env::{args, var};
-use std::io::{stdout, Write};
 use std::process::exit;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
