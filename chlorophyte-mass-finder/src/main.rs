@@ -30,7 +30,7 @@ fn main() {
     let splashes = include_str!("../../assets/splashes.txt").lines().collect::<Vec<&str>>();
     let splash = splashes[fastrand::usize(..splashes.len())];
     println!("{banner}{splash}\n");
-    eprintln!("Chlorophyte MassFinder - https://github.com/Paddyk45/chlorophyte");
+    println!("Chlorophyte MassFinder - https://github.com/Paddyk45/chlorophyte");
     let mut ranges = ScanRanges::new();
 
     let Some(includes) = args().nth(1) else {
