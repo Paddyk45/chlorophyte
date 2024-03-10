@@ -26,7 +26,7 @@ const MAX_PPS: u64 = 30_000;
 #[allow(clippy::needless_pass_by_value, clippy::cast_precision_loss)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
     let addrs = ranges.count() as f32;
-    let mut throtter = Throttler::new(MAX_PPS);
+    let mut throttler = Throttler::new(MAX_PPS);
     info!("Throttler is set to {MAX_PPS} packets/s");
 
     let mut t = Instant::now();
@@ -56,7 +56,7 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
                 }
                 batch_size -= 1;
                 if batch_size == 0 {
-                    batch_size = throtter.next_batch();
+                    batch_size = throttler.next_batch();
                 }
                 CONNECTIONS
                     .write()
