@@ -32,7 +32,7 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
     let mut t = Instant::now();
     let mut p = 0usize;
 
-    let mut batch_size = throtter.next_batch();
+    let mut batch_size = throttler.next_batch();
     let mut syns = 0f32;
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
