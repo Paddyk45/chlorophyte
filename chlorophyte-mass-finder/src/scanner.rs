@@ -10,6 +10,7 @@ use matscan_tcp::{StatelessTcpReadHalf, StatelessTcpWriteHalf, Throttler};
 use once_cell::sync::Lazy;
 use pnet_packet::tcp::TcpFlags;
 use std::collections::HashMap;
+use std::env::args;
 use std::io::Cursor;
 use std::net::SocketAddrV4;
 use std::sync::RwLock;
@@ -20,14 +21,15 @@ static CONNECTIONS: Lazy<RwLock<HashMap<SocketAddrV4, ConnectionState>>> =
     Lazy::new(|| RwLock::new(HashMap::new()));
 static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::new(vec![]));
 
-const MAX_PPS: u64 = 30_000;
-
 /// The thread that spews SYN packets
 #[allow(clippy::needless_pass_by_value, clippy::cast_precision_loss)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
+    let max_pps = args().nth(2).map_or(10_000, |pps| {
+        pps.parse().expect("Failed to parse max pps as u64")
+    });
     let addrs = ranges.count() as f32;
-    let mut throtter = Throttler::new(MAX_PPS);
-    info!("Throttler is set to {MAX_PPS} packets/s");
+    let mut throtter = Throttler::new(max_pps);
+    info!("Throttler is set to {max_pps} packets/s");
 
     let mut t = Instant::now();
     let mut p = 0usize;
@@ -66,10 +68,12 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
             addr = addr.saturating_add(1);
         }
     }
+
+    println!("SYNner done");
 }
 
 /// The thread that finishes the TCP handshake and handles incoming packets from the server
-#[allow(clippy::significant_drop_tightening)]
+#[allow(clippy::significant_drop_tightening, clippy::too_many_lines)]
 pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHalf) -> ! {
     let mut conn_request_packet = vec![0u8; 0];
     conn_request_packet
@@ -86,6 +90,10 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
             tcp_w.send_rst(addr, tcp.destination, tcp.acknowledgement, tcp.sequence);
             continue;
         };
+
+        if conn.closed {
+            continue;
+        }
 
         // SYN+ACK
         if tcp.flags & TcpFlags::SYN != 0 && tcp.flags & TcpFlags::ACK != 0 {
@@ -180,7 +188,7 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
     }
 }
 
-/// Removes connections that didn't send a SYN+ACK
+/// Removes connections that didn't send a SYN+ACK or were reset
 pub fn garbage_collector() -> ! {
     loop {
         let conns = CONNECTIONS.read().unwrap().clone();

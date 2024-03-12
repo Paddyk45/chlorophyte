@@ -27,7 +27,9 @@ fn main() {
     let basic = figlet_rs::FIGfont::from_content(include_str!("../../assets/basic.flf")).unwrap();
     let mut banner = basic.convert("CHLOROPHYTE").unwrap();
     banner.height = 6;
-    let splashes = include_str!("../../assets/splashes.txt").lines().collect::<Vec<&str>>();
+    let splashes = include_str!("../../assets/splashes.txt")
+        .lines()
+        .collect::<Vec<&str>>();
     let splash = splashes[fastrand::usize(..splashes.len())];
     println!("{banner}{splash}\n");
     eprintln!("Chlorophyte MassFinder - https://github.com/Paddyk45/chlorophyte");
