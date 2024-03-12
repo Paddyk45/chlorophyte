@@ -9,6 +9,8 @@ use matscan_ranges::exclude;
 use matscan_ranges::targets::{ScanRange, ScanRanges};
 use matscan_tcp::{SourcePort, StatelessTcp};
 use std::env::{args, var};
+use std::fs::File;
+use std::io::Write;
 use std::process::exit;
 use std::thread::{sleep, spawn};
 use std::time::Duration;
@@ -65,5 +67,12 @@ fn main() {
     println!("Sleeping 3 seconds...");
     sleep(Duration::from_secs(3));
 
-    dbg!(get_found_servers());
+    let found_servers = get_found_servers();
+    println!("Found {} Terraria servers!", found_servers.len());
+    let mut f = File::create("chlorophyte_mass_finder_results.txt").expect("Failed to open files");
+    for s in found_servers {
+        f.write_all(format!("{} {:?}\n", s.address, s.connection_request_result).as_bytes())
+            .expect("Failed to write line to file");
+    }
+    println!("Results written to chlorophyte_mass_finder_results.txt");
 }
