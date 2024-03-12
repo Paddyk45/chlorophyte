@@ -41,4 +41,5 @@ All crates starting with matscan- are part of [matscan](https://github.com/mat-1
 - [mat](https://github.com/mat-1) for letting me "borrow" small amounts of code from [matscan](https://github.com/mat-1/matscan) and helping me a bit
 - [The Wireshark software](https://www.wireshark.org) for helping me debug my stupid errors
 - [Some 10-year-old protocol documentation](https://seancode.com/terrafirma/net.html) for some protocol packet stuff
+- [Nikolan](https://github.com/nikolan123) for temporarily running the scanner for me
 - [Vero](https://github.com/veronoicc/) for helping me
