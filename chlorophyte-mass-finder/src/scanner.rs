@@ -27,7 +27,7 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
     let max_pps = args().nth(2).map_or(10_000, |pps| {
         pps.parse().expect("Failed to parse max pps as u64")
     });
-    let addrs = ranges.count() as f32;
+    let addrs = ranges.count() as f64;
     let mut throttler = Throttler::new(max_pps);
     info!("Throttler is set to {max_pps} packets/s");
 
@@ -35,7 +35,7 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
     let mut p = 0usize;
 
     let mut batch_size = throttler.next_batch();
-    let mut syns = 0f32;
+    let mut syns = 0f64;
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
         let addr_end = range.addr_end;
@@ -190,21 +190,22 @@ pub fn receiver(mut tcp_w: StatelessTcpWriteHalf, mut tcp_r: StatelessTcpReadHal
 
 /// Removes connections that didn't send a SYN+ACK or were reset
 pub fn garbage_collector() -> ! {
+    let timeout = Duration::from_secs(7);
     loop {
         let conns = CONNECTIONS.read().unwrap().clone();
         let mut to_remove = vec![];
         conns
             .iter()
             .enumerate()
-            .filter(|c| c.1 .1.syn_time.elapsed() > Duration::from_secs(7) || c.1 .1.closed)
-            .for_each(|c| to_remove.push(c.1 .0));
+            .filter(|c| c.1 .1.syn_time.elapsed() > timeout || c.1.1.closed)
+            .for_each(|c| to_remove.push(c.1.0));
         if !to_remove.is_empty() {
             trace!("[gc] removing {} connections", to_remove.len());
         }
         for i in to_remove {
             CONNECTIONS.write().unwrap().remove(i);
         }
-        sleep(Duration::from_millis(10));
+        sleep(Duration::from_millis(40));
     }
 }
 
