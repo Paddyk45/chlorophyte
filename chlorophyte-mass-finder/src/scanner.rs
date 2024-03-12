@@ -28,13 +28,13 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
         pps.parse().expect("Failed to parse max pps as u64")
     });
     let addrs = ranges.count() as f32;
-    let mut throtter = Throttler::new(max_pps);
+    let mut throttler = Throttler::new(max_pps);
     info!("Throttler is set to {max_pps} packets/s");
 
     let mut t = Instant::now();
     let mut p = 0usize;
 
-    let mut batch_size = throtter.next_batch();
+    let mut batch_size = throttler.next_batch();
     let mut syns = 0f32;
     for range in ranges.ranges() {
         let mut addr = range.addr_start;
@@ -58,7 +58,7 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
                 }
                 batch_size -= 1;
                 if batch_size == 0 {
-                    batch_size = throtter.next_batch();
+                    batch_size = throttler.next_batch();
                 }
                 CONNECTIONS
                     .write()
