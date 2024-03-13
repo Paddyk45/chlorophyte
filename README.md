@@ -8,7 +8,7 @@
 Chlorophyte is program that scans a good portion of the internet for Terraria v1.4.4.9 servers.
 
 ## Current state
-The mass-finder is in a working state.
+The mass finder is in a working state.
 Development of the rescanner and the part that gets the server information is planned but has not been started.
 
 ## Setup
@@ -16,7 +16,7 @@ Development of the rescanner and the part that gets the server information is pl
 Before running any program that is part of Chlorophyte, you need to enter this command:
 `sudo iptables -A INPUT -p tcp -m multiport --dports 61000:65000 -j DROP`
 You will need to rerun the command after a reboot.
-##### This will make the OS ignore all TCP packets received on ports 61000-65000. This is required because chlorophyte uses a TCP stack separate from the OSes one. If the OS receives a TCP packet without having a connection with that IP, it will send an RST packet. This command makes the OS ignore all connections on this port so that doesn't happen.
+##### This will make the OS ignore all TCP packets received on ports 61000-65000. This is required because Chlorophyte uses a TCP stack separate from the OSes one. If the OS receives a TCP packet without having a connection with that IP, it will send an RST packet. This command makes the OS ignore all connections on this port so that doesn't happen.
 
 ## Usage
 Check the `USAGE.md`s of the crates for info on how to use them.

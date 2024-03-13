@@ -4,3 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+matscan-tcp = { git = "https://git.shrecked.dev/Paddyk45/matscan-tcp", version = "0.1.0" }

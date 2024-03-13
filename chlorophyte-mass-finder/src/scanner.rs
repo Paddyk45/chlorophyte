@@ -48,10 +48,11 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
                 if t.elapsed().as_nanos() >= Duration::from_secs(1).as_nanos() {
                     info!("Scanning @ ~{p} packets/s");
                     info!(
-                        "{:.3}% done ({}/{} hosts done)",
+                        "{:.3}% done ({}/{} hosts done) - found {} servers",
                         (syns / addrs) * 100.,
                         syns,
-                        addrs
+                        addrs,
+                        FOUND_SERVERS.read().unwrap().len(),
                     );
                     t = Instant::now();
                     p = 0;
