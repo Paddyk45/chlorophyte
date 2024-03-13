@@ -348,3 +348,20 @@ impl C2STerrariaPacket for C2SRequestInitialTileData {
         packet
     }
 }
+
+pub struct C2SNetMessageCommand {
+    pub command: String,
+    pub text: String,
+}
+
+impl C2STerrariaPacket for C2SNetMessageCommand {
+    const PACKET_ID: u8 = 82;
+
+    fn serialize(self) -> Vec<u8> {
+        let mut packet = vec![];
+        packet.extend_from_slice(&1u16.to_le_bytes());
+        packet.write_terraria_string(self.command).unwrap();
+        packet.write_terraria_string(self.text).unwrap();
+        packet
+    }
+}

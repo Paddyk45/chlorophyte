@@ -1,7 +1,7 @@
 # Chlorophyte
 
 <p>
-    <img src="https://github.com/Paddyk45/chlorophyte/blob/main/assets/logo.png" height=100 alt="Chlorophyte">
+    <img src="https://github.com/Paddyk45/chlorophyte/blob/main/assets/logo.png" height=100 alt=":3">
 </p>
 
 ## What is Chlorophyte?
