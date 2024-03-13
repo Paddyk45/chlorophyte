@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
-members = ["chlorophyte-mass-finder"]
+members = ["chlorophyte-mass-finder", "chlorophyte-tshock-checker"]
 exclude = ["libs"]

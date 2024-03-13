@@ -24,7 +24,7 @@ static FOUND_SERVERS: Lazy<RwLock<Vec<TerrariaServer>>> = Lazy::new(|| RwLock::n
 /// The thread that spews SYN packets
 #[allow(clippy::needless_pass_by_value, clippy::cast_precision_loss)]
 pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
-    let max_pps = args().nth(2).map_or(10_000, |pps| {
+    let max_pps = args().nth(2).map_or(50_000, |pps| {
         pps.parse().expect("Failed to parse max pps as u64")
     });
     let addrs = ranges.count() as f64;
