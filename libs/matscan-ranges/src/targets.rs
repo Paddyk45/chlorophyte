@@ -295,6 +295,23 @@ impl ScanRanges {
     }
 }
 
+impl From<Vec<SocketAddrV4>> for ScanRanges {
+    fn from(addrs: Vec<SocketAddrV4>) -> Self {
+        let mut ranges: Vec<ScanRange> = vec![];
+        for socket_addr in addrs {
+            ranges.push(ScanRange {
+                addr_start: *socket_addr.ip(),
+                addr_end: *socket_addr.ip(),
+                port_start: socket_addr.port(),
+                port_end: socket_addr.port(),
+            })
+        };
+        let mut scan_ranges = ScanRanges::new();
+        scan_ranges.extend(ranges);
+        scan_ranges
+    }
+}
+
 pub struct StaticScanRanges {
     pub ranges: Vec<StaticScanRange>,
     pub count: usize,

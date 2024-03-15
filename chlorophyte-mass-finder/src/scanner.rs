@@ -69,8 +69,6 @@ pub fn synner(ranges: ScanRanges, mut tcp_w: StatelessTcpWriteHalf) {
             addr = addr.saturating_add(1);
         }
     }
-
-    println!("SYNner done");
 }
 
 /// The thread that finishes the TCP handshake and handles incoming packets from the server
@@ -212,4 +210,9 @@ pub fn garbage_collector() -> ! {
 
 pub fn get_found_servers() -> Vec<TerrariaServer> {
     FOUND_SERVERS.read().unwrap().clone()
+}
+
+pub fn clear() {
+    FOUND_SERVERS.write().unwrap().clear();
+    CONNECTIONS.write().unwrap().clear();
 }

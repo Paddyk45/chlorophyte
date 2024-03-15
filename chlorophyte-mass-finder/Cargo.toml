@@ -17,6 +17,7 @@ pnet_packet = "0.34.0"
 chlorophyte-terraria-protocol = { version = "0.1.0", path = "../libs/chlorophyte-terraria-protocol" }
 ctrlc = "3.4.2"
 figlet-rs = "0.1.5"
+chrono = "0.4.35"
 
 [profile.release]
 debug = true
