@@ -3,6 +3,7 @@
 mod model;
 mod scanner;
 
+use chrono::Local;
 use log::{info, Level};
 use matscan_ranges::exclude;
 use matscan_ranges::targets::{ScanRange, ScanRanges};
@@ -13,8 +14,7 @@ use std::io::Write;
 use std::net::SocketAddrV4;
 use std::process::exit;
 use std::thread::{sleep, spawn};
-use std::time::{Duration, Instant, SystemTime};
-use chrono::Local;
+use std::time::{Duration, Instant};
 
 fn main() {
     ctrlc::set_handler(|| {
@@ -60,9 +60,8 @@ fn main() {
         ranges.ranges().len(),
         ranges.count()
     );
-    let mut tcp_w = tcp.write.clone();
     let start_time = Instant::now();
-    tcp_w = tcp.write.clone();
+    let mut tcp_w = tcp.write.clone();
     spawn(|| scanner::receiver(tcp_w, tcp.read));
     spawn(|| scanner::garbage_collector());
     tcp_w = tcp.write.clone();
@@ -72,8 +71,8 @@ fn main() {
 
     let mut found_servers = scanner::get_found_servers();
     println!("Found {} Terraria servers!", found_servers.len());
-    
-    if start_time.elapsed().as_secs() > 60*60*2 {
+
+    if start_time.elapsed().as_secs() > 60 * 60 * 2 {
         println!("Scan start was more than 2 hours ago, rescanning...");
         scanner::clear();
         let rescan_ranges = found_servers
@@ -84,12 +83,15 @@ fn main() {
         scanner::synner(rescan_ranges, tcp.write);
         found_servers = scanner::get_found_servers();
     }
-    let file_name = format!("chlorophyte_mass_finder_results-{}.txt", Local::now().format("%y-%m-%d_%H_%M_%S"));
+    let file_name = format!(
+        "chlorophyte_mass_finder_results-{}.txt",
+        Local::now().format("%y-%m-%d_%H_%M_%S")
+    );
     let mut f = File::create(&file_name).expect("Failed to open files");
     for s in &found_servers {
         f.write_all(format!("{} {:?}\n", s.address, s.connection_request_result).as_bytes())
             .expect("Failed to write line to file");
     }
-    
+
     println!("Results written to {file_name}");
 }

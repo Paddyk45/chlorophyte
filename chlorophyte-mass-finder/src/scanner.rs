@@ -196,8 +196,8 @@ pub fn garbage_collector() -> ! {
         conns
             .iter()
             .enumerate()
-            .filter(|c| c.1 .1.syn_time.elapsed() > timeout || c.1.1.closed)
-            .for_each(|c| to_remove.push(c.1.0));
+            .filter(|c| c.1 .1.syn_time.elapsed() > timeout || c.1 .1.closed)
+            .for_each(|c| to_remove.push(c.1 .0));
         if !to_remove.is_empty() {
             trace!("[gc] removing {} connections", to_remove.len());
         }
