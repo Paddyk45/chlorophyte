@@ -201,6 +201,7 @@ pub fn garbage_collector() -> ! {
         if !to_remove.is_empty() {
             trace!("[gc] removing {} connections", to_remove.len());
         }
+        to_remove.reverse();
         for i in to_remove {
             CONNECTIONS.write().unwrap().remove(i);
         }
